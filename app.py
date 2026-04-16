@@ -103,4 +103,3 @@ if st.button("Analisar Documentos") and uploaded_files:
 
         except Exception as e:
             st.error(f"Ocorreu um erro: {e}")
-"""
