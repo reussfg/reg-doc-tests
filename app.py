@@ -45,6 +45,9 @@ LISTA DE DOCUMENTOS:
 - Laudo de embalagem
 - Modelo COA
 
+Regra:
+- Declarações tem validade da seguinte maneira: Data da Validade + 2 anos para frente. Ex: Se a declaração é de 01/01/2026, a validade é 01/01/2028.
+
 Retorne EXATAMENTE a estrutura JSON abaixo, avaliando todos os itens da lista acima (se não achar, marque como Ausente). Documentos enviados que não estão na lista devem ir para "extras":
 [
   {
