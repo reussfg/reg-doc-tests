@@ -1,5 +1,6 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import pandas as pd
 import tempfile
 import os
@@ -11,15 +12,9 @@ st.set_page_config(page_title="Validador Regulatório", layout="wide")
 st.title("📄 Validador de Documentos de Fornecedores")
 
 # --- CONFIGURAÇÃO DA API ---
-# Puxa a chave de forma segura do cofre do Streamlit
+# Puxa a chave do cofre do Streamlit e inicia o cliente NOVO
 API_KEY = st.secrets["GEMINI_API_KEY"]
-genai.configure(api_key=API_KEY)
-
-# Usando o modelo PRO
-model = genai.GenerativeModel(
-    model_name="gemini-3-flash-preview",
-    generation_config={"response_mime_type": "application/json"}
-)
+client = genai.Client(api_key=API_KEY)
 
 # --- PROMPT DE NEGÓCIO ---
 PROMPT = """
@@ -72,21 +67,32 @@ if st.button("Analisar Documentos") and uploaded_files:
             arquivos_api = []
             temp_dir = tempfile.mkdtemp()
             
+            # Faz o upload no formato novo do SDK
             for file in uploaded_files:
                 temp_path = os.path.join(temp_dir, file.name)
                 with open(temp_path, "wb") as f:
                     f.write(file.getbuffer())
-                uploaded_api_file = genai.upload_file(path=temp_path)
+                
+                uploaded_api_file = client.files.upload(file=temp_path)
                 arquivos_api.append(uploaded_api_file)
 
-            response = model.generate_content([PROMPT] + arquivos_api)
+            # Chama a IA forçando a saída em JSON via novo SDK
+            response = client.models.generate_content(
+                model="gemini-3-flash-preview",
+                contents=[PROMPT] + arquivos_api,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                )
+            )
             
+            # Converte e exibe os dados
             dados_json = json.loads(response.text)
             df = pd.DataFrame(dados_json)
 
             st.subheader("📊 Resultado da Análise")
             st.dataframe(df, use_container_width=True)
 
+            # Botão de download
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                 df.to_excel(writer, index=False, sheet_name='Homologacao')
@@ -98,8 +104,9 @@ if st.button("Analisar Documentos") and uploaded_files:
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
 
+            # Limpeza dos arquivos na API
             for f in arquivos_api:
-                genai.delete_file(f.name)
+                client.files.delete(name=f.name)
 
         except Exception as e:
             st.error(f"Ocorreu um erro: {e}")
