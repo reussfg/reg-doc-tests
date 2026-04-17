@@ -67,9 +67,11 @@ if st.button("Analisar Documentos") and uploaded_files:
             arquivos_api = []
             temp_dir = tempfile.mkdtemp()
             
-            # Faz o upload no formato novo do SDK
-            for file in uploaded_files:
-                temp_path = os.path.join(temp_dir, file.name)
+            # Faz o upload no formato novo do SDK com nome seguro (anti-erros de acentuação)
+            for i, file in enumerate(uploaded_files):
+                nome_seguro = f"documento_{i}.pdf"
+                temp_path = os.path.join(temp_dir, nome_seguro)
+                
                 with open(temp_path, "wb") as f:
                     f.write(file.getbuffer())
                 
@@ -78,7 +80,7 @@ if st.button("Analisar Documentos") and uploaded_files:
 
             # Chama a IA forçando a saída em JSON via novo SDK
             response = client.models.generate_content(
-                model="gemini-3-flash-preview",
+                model="gemini-1.5-pro",
                 contents=[PROMPT] + arquivos_api,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
