@@ -80,7 +80,7 @@ if st.button("Analisar Documentos") and uploaded_files:
 
             # Chama a IA forçando a saída em JSON via novo SDK
             response = client.models.generate_content(
-                model="gemini-1.5-pro",
+                model="gemini-3-flash-preview",
                 contents=[PROMPT] + arquivos_api,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
