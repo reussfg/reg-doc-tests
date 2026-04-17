@@ -17,7 +17,7 @@ genai.configure(api_key=API_KEY)
 
 # Usando o modelo PRO
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro",
+    model_name="gemini-3-flash-preview",
     generation_config={"response_mime_type": "application/json"}
 )
 
